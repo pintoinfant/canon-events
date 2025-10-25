@@ -33,8 +33,8 @@ export default function ReviewerDashboard() {
             <h1 className="text-4xl font-bold text-foreground">Reviewer Dashboard</h1>
             <p className="text-muted-foreground mt-2">Review and approve article submissions</p>
           </div>
-          <Link href="/contribute">
-            <Button className="rounded-full">Contribute</Button>
+          <Link href="/create">
+            <Button className="rounded-full">Create Article</Button>
           </Link>
         </div>
       </div>

@@ -25,9 +25,9 @@ export function EditHistoryPanel({ article }: EditHistoryPanelProps) {
         </Button>
       </Link>
 
-      <Link href="/contribute">
-        <Button className="w-full bg-transparent" size="lg" variant="outline">
-          Contribute
+      <Link href="/create">
+        <Button className="w-full my-4 bg-transparent" size="lg" variant="outline">
+          Create New Article
         </Button>
       </Link>
 

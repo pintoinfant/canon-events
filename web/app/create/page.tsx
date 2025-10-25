@@ -128,8 +128,8 @@ export default function CreatePage() {
         </Link>
 
         <div className="mb-8">
-          <h1 className="text-4xl font-sans font-bold text-foreground mb-2 tracking-tighter">Create New Article</h1>
-          <p className="text-muted-foreground">Submit a new article to the Canon Event knowledge platform</p>
+          <h1 className="text-4xl font-sans font-bold text-foreground mb-2 tracking-tighter">Contribute by Sharing Knowledge</h1>
+          <p className="text-muted-foreground">Propose a new article for the Canon platform. Your submission will be reviewed by the community.</p>
         </div>
 
         <Card className="glass rounded-2xl border-white/20">

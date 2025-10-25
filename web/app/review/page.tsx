@@ -151,8 +151,8 @@ export default function ReviewPage() {
             <h1 className="text-4xl font-sans font-bold text-foreground mb-2">Review Articles</h1>
             <p className="text-muted-foreground">Review and vote on submitted articles to help maintain quality</p>
           </div>
-          <Link href="/contribute">
-            <Button className="rounded-full">Contribute</Button>
+          <Link href="/create">
+            <Button className="rounded-full">Create Article</Button>
           </Link>
         </div>
 
