@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
-import { useWallet } from "@/lib/wallet-context"
+import { useAccount } from "wagmi"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
@@ -58,7 +58,7 @@ const mockContributionArticles: ContributionArticle[] = [
 ]
 
 export default function ContributePage() {
-  const { isConnected, address } = useWallet()
+  const { isConnected, address } = useAccount()
   const [selectedArticle, setSelectedArticle] = useState<ContributionArticle | null>(null)
   const [contribution, setContribution] = useState("")
   const [contributionAmount, setContributionAmount] = useState("")

@@ -2,9 +2,9 @@ import type React from "react"
 import type { Metadata } from "next"
 
 import { Analytics } from "@vercel/analytics/next"
-import { WalletProvider } from "@/lib/wallet-context"
 import "./globals.css"
 import { Geist, Geist_Mono, Geist as V0_Font_Geist, Geist_Mono as V0_Font_Geist_Mono, Cormorant as V0_Font_Cormorant } from 'next/font/google'
+import { Providers } from "@/components/providers"
 
 // Initialize fonts
 const _geist = V0_Font_Geist({ subsets: ['latin'], weight: ["100","200","300","400","500","600","700","800","900"] })
@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-serif antialiased`}>
-        <WalletProvider>{children}</WalletProvider>
+        <Providers>{children}</Providers>
         <Analytics />
       </body>
     </html>

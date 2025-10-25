@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { useWallet } from "@/lib/wallet-context"
+import { useAccount } from "wagmi"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -55,7 +55,7 @@ const mockReviewArticles: ReviewArticle[] = [
 ]
 
 export default function ReviewPage() {
-  const { isConnected } = useWallet()
+  const { isConnected } = useAccount()
   const [articles, setArticles] = useState(mockReviewArticles)
   const [selectedArticle, setSelectedArticle] = useState<ReviewArticle | null>(null)
   const [userVotes, setUserVotes] = useState<Record<string, "approve" | "reject" | null>>({})
