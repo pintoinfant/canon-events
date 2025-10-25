@@ -10,6 +10,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { ArrowLeft, AlertCircle } from "lucide-react"
+import { uploadJSONToIPFS } from "@/lib/lighthouse"
+import { useWriteContract } from "wagmi"
+import { parseEther } from "viem"
+import { abi } from "@/lib/abi"
 
 export default function CreatePage() {
   const { isConnected } = useWallet()
@@ -19,6 +23,8 @@ export default function CreatePage() {
   const [stakeAmount, setStakeAmount] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [cid, setCid] = useState("")
+  const { writeContractAsync } = useWriteContract()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,10 +34,26 @@ export default function CreatePage() {
     }
 
     setIsSubmitting(true)
-    // Simulate submission
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsSubmitting(false)
-    setSubmitted(true)
+    try {
+      const articleJSON = { title, summary, content }
+      const newCid = await uploadJSONToIPFS(articleJSON)
+      setCid(newCid)
+
+      await writeContractAsync({
+        abi,
+        address: "0x059e349b3c3f14376b27a29f6b3d0dc18363a47a", // Replace with your contract address
+        functionName: "proposeCreate",
+        args: [newCid],
+        value: parseEther(stakeAmount),
+      })
+
+      setSubmitted(true)
+    } catch (error) {
+      console.error(error)
+      alert("An error occurred during submission.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   if (!isConnected) {
@@ -80,7 +102,7 @@ export default function CreatePage() {
                     <strong>Article:</strong> {title}
                   </p>
                   <p className="text-sm text-green-800 mt-2">
-                    <strong>Stake Amount:</strong> {stakeAmount} ETH
+                    <strong>Stake Amount:</strong> {stakeAmount} HBAR
                   </p>
                 </div>
                 <p className="text-muted-foreground">
@@ -152,24 +174,24 @@ export default function CreatePage() {
               </div>
 
               <div className="border-t border-border pt-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4">Stake ETH</h3>
+                <h3 className="text-lg font-semibold text-foreground mb-4">Stake HBAR</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Stake ETH to submit your article. This demonstrates your confidence in the quality of your submission.
+                  Stake HBAR to submit your article. This demonstrates your confidence in the quality of your submission.
                 </p>
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">Amount (ETH)</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">Amount (HBAR)</label>
                   <div className="flex gap-2">
                     <Input
                       type="number"
-                      placeholder="0.1"
+                      placeholder="10"
                       value={stakeAmount}
                       onChange={(e) => setStakeAmount(e.target.value)}
-                      step="0.01"
+                      step="1"
                       min="0"
                       className="rounded-lg glass-strong flex-1"
                       required
                     />
-                    <span className="flex items-center px-4 py-2 bg-muted rounded-lg text-muted-foreground">ETH</span>
+                    <span className="flex items-center px-4 py-2 bg-muted rounded-lg text-muted-foreground">HBAR</span>
                   </div>
                 </div>
               </div>
