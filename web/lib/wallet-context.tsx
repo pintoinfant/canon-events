@@ -1,11 +1,13 @@
 "use client"
 
 import type React from "react"
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext } from "react"
+import { useAccount, useConnect, useDisconnect } from "wagmi"
+import { injected } from "wagmi/connectors"
 
 interface WalletContextType {
   isConnected: boolean
-  address: string | null
+  address: `0x${string}` | undefined
   connect: () => void
   disconnect: () => void
 }
@@ -13,30 +15,25 @@ interface WalletContextType {
 const WalletContext = createContext<WalletContextType | undefined>(undefined)
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
-  const [isConnected, setIsConnected] = useState(false)
-  const [address, setAddress] = useState<string | null>(null)
+  const { address, isConnected } = useAccount()
+  const { connect } = useConnect()
+  const { disconnect } = useDisconnect()
 
-  const connect = () => {
-    // Simulate wallet connection
-    const mockAddress = "0x" + Math.random().toString(16).slice(2, 42)
-    setAddress(mockAddress)
-    setIsConnected(true)
-  }
-
-  const disconnect = () => {
-    setAddress(null)
-    setIsConnected(false)
+  const handleConnect = () => {
+    connect({ connector: injected() })
   }
 
   return (
-    <WalletContext.Provider value={{ isConnected, address, connect, disconnect }}>{children}</WalletContext.Provider>
+    <WalletContext.Provider value={{ isConnected, address, connect: handleConnect, disconnect }}>
+      {children}
+    </WalletContext.Provider>
   )
 }
 
 export function useWallet() {
   const context = useContext(WalletContext)
-  if (!context) {
-    throw new Error("useWallet must be used within WalletProvider")
+  if (context === undefined) {
+    throw new Error("useWallet must be used within a WalletProvider")
   }
   return context
 }

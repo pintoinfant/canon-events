@@ -2,7 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 
 import { Analytics } from "@vercel/analytics/next"
-import { WalletProvider } from "@/lib/wallet-context"
+import { Providers } from "@/components/providers"
 import "./globals.css"
 
 import {
@@ -38,7 +38,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans antialiased`}>
-        <WalletProvider>{children}</WalletProvider>
+        <Providers>{children}</Providers>
         <Analytics />
       </body>
     </html>
