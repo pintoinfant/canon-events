@@ -11,6 +11,7 @@ import { useReadContract, useReadContracts, useWriteContract } from "wagmi"
 import { abi, address } from "@/lib/abi"
 import { formatEther, parseEther } from "viem"
 import { shortenAddress } from "@/lib/utils"
+import { Spinner } from "@/components/ui/spinner"
 
 interface ReviewArticle {
   id: string
@@ -36,7 +37,7 @@ export default function ReviewPage() {
     functionName: "proposalCount",
   })
 
-  const { data: proposals } = useReadContracts({
+  const { data: proposals, isLoading } = useReadContracts({
     contracts: proposalCount
       ? Array.from({ length: Number(proposalCount) }, (_, i) => ({
           address,
@@ -126,6 +127,14 @@ export default function ReviewPage() {
           </Card>
         </div>
       </main>
+    )
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner className="h-12 w-12" />
+      </div>
     )
   }
 

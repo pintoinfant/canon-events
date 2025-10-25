@@ -11,6 +11,7 @@ import { useEffect, useState } from "react"
 import { createPublicClient, http } from "viem"
 import { hederaTestnet } from "@/lib/wagmi"
 import { EditHistoryPanel } from "@/components/edit-history-panel"
+import { Spinner } from "@/components/ui/spinner"
 
 type ProposalSummary = readonly [
   bigint,
@@ -160,7 +161,11 @@ export default function ArticleClient({ id }: ArticleClientProps) {
   }, [id])
 
   if (isLoading) {
-    return <div>Loading...</div>
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner className="h-12 w-12" />
+      </div>
+    )
   }
 
   if (!article) {

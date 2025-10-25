@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ThumbsUp, ThumbsDown, ChevronLeft } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Spinner } from "@/components/ui/spinner"
 
 interface ProposalDetails {
   title: string
@@ -95,6 +96,14 @@ export default function ReviewProposalPage() {
 
   const isLoading = isLoadingProposal || !proposalDetails || originalContent === null
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner className="h-12 w-12" />
+      </div>
+    )
+  }
+
   return (
     <div className="container mx-auto py-10">
       <Button variant="ghost" onClick={() => router.back()} className="mb-4">
@@ -106,18 +115,14 @@ export default function ReviewProposalPage() {
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl">{proposalDetails?.title || <Skeleton className="h-8 w-3/4" />}</CardTitle>
-              <CardDescription>{proposalDetails?.summary || <Skeleton className="h-4 w-full mt-2" />}</CardDescription>
+              <CardTitle className="text-2xl">{proposalDetails?.title}</CardTitle>
+              <CardDescription>{proposalDetails?.summary}</CardDescription>
             </CardHeader>
             <CardContent>
               <h3 className="font-semibold mb-2 text-lg">Proposed Changes</h3>
-              <p className="text-muted-foreground mb-4">{proposalDetails?.changeDescription || <Skeleton className="h-4 w-1/2" />}</p>
+              <p className="text-muted-foreground mb-4">{proposalDetails?.changeDescription}</p>
               <div className="border rounded-md p-4 bg-muted/20">
-                {isLoading ? (
-                  <Skeleton className="h-64 w-full" />
-                ) : (
-                  <DiffViewer oldContent={originalContent!} newContent={proposalDetails!.content} />
-                )}
+                <DiffViewer oldContent={originalContent!} newContent={proposalDetails!.content} />
               </div>
             </CardContent>
           </Card>
@@ -144,7 +149,7 @@ export default function ReviewProposalPage() {
                 <Button
                   className="w-full"
                   onClick={() => handleVote("approve")}
-                  disabled={isSubmitting || isLoading}
+                  disabled={isSubmitting}
                 >
                   <ThumbsUp className="h-4 w-4 mr-2" />
                   {isSubmitting ? "Approving..." : "Approve"}
@@ -153,7 +158,7 @@ export default function ReviewProposalPage() {
                   variant="destructive"
                   className="w-full"
                   onClick={() => handleVote("reject")}
-                  disabled={isSubmitting || isLoading}
+                  disabled={isSubmitting}
                 >
                   <ThumbsDown className="h-4 w-4 mr-2" />
                   {isSubmitting ? "Rejecting..." : "Reject"}

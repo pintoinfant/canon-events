@@ -7,6 +7,7 @@ import { useReadContract, useReadContracts } from "wagmi"
 import { abi, address } from "@/lib/abi"
 import { WalletButton } from "@/components/wallet-button"
 import Link from "next/link"
+import { Spinner } from "@/components/ui/spinner"
 
 type ProposalSummary = readonly [
   bigint,
@@ -31,20 +32,22 @@ export default function Home() {
     functionName: "proposalCount",
   })
 
-  const proposalSummaries = useReadContracts({
+  const { data: proposalSummariesData, isLoading } = useReadContracts({
     contracts: Array.from({ length: Number(proposalCount) }, (_, i) => ({
       abi,
       address,
       functionName: "proposalSummary",
       args: [BigInt(i + 1)],
     })),
+    query: {
+      enabled: !!proposalCount,
+    },
   })
 
   useEffect(() => {
     const fetchArticles = async () => {
-      if (proposalSummaries.data) {
-        console.log("Proposal summaries data:", proposalSummaries.data)
-        const acceptedProposals = proposalSummaries.data
+      if (proposalSummariesData) {
+        const acceptedProposals = proposalSummariesData
           .map((p) => p.result as ProposalSummary | undefined)
           .filter((p): p is ProposalSummary => !!p && p[11] && p[2] === 0) // accepted and is a create proposal
 
@@ -63,14 +66,20 @@ export default function Home() {
         })
         const fetchedArticles = await Promise.all(articlePromises)
         setArticles(fetchedArticles.filter((a) => a))
-      } else {
-        console.log("No proposal summaries data available yet.")
       }
     }
     fetchArticles()
-  }, [proposalSummaries.data])
+  }, [proposalSummariesData])
 
   const featuredArticles = articles.slice(0, 3)
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner className="h-12 w-12" />
+      </div>
+    )
+  }
 
   return (
     <main className="min-h-screen bg-background">
