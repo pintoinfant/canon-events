@@ -27,6 +27,7 @@ export function ArticleEditor({ article }: ArticleEditorProps) {
   const [content, setContent] = useState(article.content)
   const [changeDescription, setChangeDescription] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [stakeAmount, setStakeAmount] = useState("1")
   const { writeContractAsync } = useWriteContract()
 
   const handleSave = async () => {
@@ -46,7 +47,7 @@ export function ArticleEditor({ article }: ArticleEditorProps) {
         abi,
         functionName: "proposeEdit",
         args: [BigInt(article.pageId), Hash],
-        value: parseEther("1"), // TODO: Make this dynamic
+        value: parseEther(stakeAmount),
       })
 
       router.push(`/article/${article.id}`)
@@ -128,6 +129,21 @@ export function ArticleEditor({ article }: ArticleEditorProps) {
                 onChange={(e) => setChangeDescription(e.target.value)}
                 placeholder="e.g., Added new section on DeFi protocols"
                 className="min-h-24"
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Staking</CardTitle>
+              <CardDescription>Set the amount of HBAR to stake for this proposal.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Input
+                type="number"
+                value={stakeAmount}
+                onChange={(e) => setStakeAmount(e.target.value)}
+                placeholder="e.g., 10"
               />
             </CardContent>
           </Card>

@@ -28,7 +28,6 @@ interface ReviewArticle {
 export default function ReviewPage() {
   const { isConnected } = useWallet()
   const [articles, setArticles] = useState<ReviewArticle[]>([])
-  const [selectedArticle, setSelectedArticle] = useState<ReviewArticle | null>(null)
   const { writeContractAsync } = useWriteContract()
 
   const { data: proposalCount } = useReadContract({
@@ -148,112 +147,39 @@ export default function ReviewPage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-4">
-            {articles.map((article) => (
-              <Card
-                key={article.id}
-                className="glass rounded-2xl border-white/20 cursor-pointer hover:shadow-lg transition-all"
-                onClick={() => setSelectedArticle(article)}
-              >
+        <div className="space-y-4">
+          {articles.map((article) => (
+            <Link key={article.id} href={`/review/${article.id}`}>
+              <Card className="glass rounded-2xl border-white/20 cursor-pointer hover:shadow-lg transition-all">
                 <CardHeader>
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <CardTitle className="text-xl mb-2">{article.title}</CardTitle>
                       <CardDescription>{article.summary}</CardDescription>
                     </div>
-                    <Badge variant="outline" className="rounded-full">
+                    {/* <Badge variant="outline" className="rounded-full">
                       {article.stakeAmount} HBAR
-                    </Badge>
+                    </Badge> */}
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">By {shortenAddress(article.author)}</span>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="rounded-full gap-1"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleVote(article.id, "approve")
-                        }}
-                      >
-                        <ThumbsUp className="w-4 h-4" />
-                        {formatEther(article.votes.for)}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="rounded-full gap-1"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleVote(article.id, "reject")
-                        }}
-                      >
-                        <ThumbsDown className="w-4 h-4" />
-                        {formatEther(article.votes.against)}
-                      </Button>
+                    <div className="flex items-center gap-4 text-sm">
+                      <div className="flex items-center gap-1">
+                        <ThumbsUp className="w-4 h-4 text-green-500" />
+                        <span>{formatEther(article.votes.for)}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <ThumbsDown className="w-4 h-4 text-red-500" />
+                        <span>{formatEther(article.votes.against)}</span>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
-
-          <div>
-            {selectedArticle ? (
-              <Card className="glass rounded-2xl border-white/20 sticky top-4">
-                <CardHeader>
-                  <CardTitle className="text-lg">{selectedArticle.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <h4 className="font-semibold text-sm text-foreground mb-2">Content Preview</h4>
-                    <p className="text-sm text-muted-foreground line-clamp-6">{selectedArticle.content}</p>
-                  </div>
-
-                  <div className="border-t border-border pt-4">
-                    <h4 className="font-semibold text-sm text-foreground mb-3">Your Vote</h4>
-                    <div className="flex gap-2">
-                      <Button
-                        className="flex-1 rounded-full gap-2"
-                        variant="outline"
-                        onClick={() => handleVote(selectedArticle.id, "approve")}
-                      >
-                        <ThumbsUp className="w-4 h-4" />
-                        Approve
-                      </Button>
-                      <Button
-                        className="flex-1 rounded-full gap-2"
-                        variant="outline"
-                        onClick={() => handleVote(selectedArticle.id, "reject")}
-                      >
-                        <ThumbsDown className="w-4 h-4" />
-                        Reject
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="bg-muted rounded-lg p-3 text-sm">
-                    <p className="text-muted-foreground">
-                      <strong>Approve:</strong> {formatEther(selectedArticle.votes.for)}
-                    </p>
-                    <p className="text-muted-foreground">
-                      <strong>Reject:</strong> {formatEther(selectedArticle.votes.against)}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card className="glass rounded-2xl border-white/20">
-                <CardContent className="pt-6">
-                  <p className="text-center text-muted-foreground">Select an article to review</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+            </Link>
+          ))}
         </div>
       </div>
     </main>
