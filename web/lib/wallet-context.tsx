@@ -15,7 +15,7 @@ interface WalletContextType {
 const WalletContext = createContext<WalletContextType | undefined>(undefined)
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
-  const { address, isConnected } = useAccount()
+  const { isConnected, address } = useAccount()
   const { connect } = useConnect()
   const { disconnect } = useDisconnect()
 
@@ -24,7 +24,14 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <WalletContext.Provider value={{ isConnected, address, connect: handleConnect, disconnect }}>
+    <WalletContext.Provider
+      value={{
+        isConnected,
+        address,
+        connect: handleConnect,
+        disconnect,
+      }}
+    >
       {children}
     </WalletContext.Provider>
   )
