@@ -13,7 +13,7 @@ import { ArrowLeft, AlertCircle } from "lucide-react"
 import { uploadJSONToIPFS } from "@/lib/lighthouse"
 import { useWriteContract } from "wagmi"
 import { parseEther } from "viem"
-import { abi } from "@/lib/abi"
+import { abi, address } from "@/lib/abi"
 
 export default function CreatePage() {
   const { isConnected } = useWallet()
@@ -41,7 +41,7 @@ export default function CreatePage() {
 
       await writeContractAsync({
         abi,
-        address: "0x059e349b3c3f14376b27a29f6b3d0dc18363a47a", // Replace with your contract address
+        address,
         functionName: "proposeCreate",
         args: [newCid],
         value: parseEther(stakeAmount),

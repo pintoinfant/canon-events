@@ -797,4 +797,6 @@ export const abi = [
     "stateMutability": "payable",
     "type": "receive"
   }
-]
+] as const
+
+export const address = "0xbbC00aD31D2A4cB3eA8B5DFB4355dAc0A4294e8A" as const

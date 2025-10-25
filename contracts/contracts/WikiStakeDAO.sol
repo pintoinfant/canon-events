@@ -51,8 +51,8 @@ contract WikiStakeDAO is Ownable, ReentrancyGuard {
     address payable public treasury; // set to contract itself in constructor; protocol funds accumulate here
 
     // Parameters (modifiable by owner)
-    uint256 public PROPOSAL_DEPOSIT = 1 ether;      // Example: 1 HBAR
-    uint256 public MIN_VOTER_STAKE = 0.01 ether;    // Example: 0.01 HBAR
+    uint256 public PROPOSAL_DEPOSIT = 0;      // Example: 1 HBAR
+    uint256 public MIN_VOTER_STAKE = 0;    // Example: 0.01 HBAR
     uint256 public VOTING_DURATION = 1 days;
     uint256 public PROTOCOL_FEE_PCT = 1000;         // inactive (full refund on success); kept for backward compatibility
 
@@ -97,7 +97,7 @@ contract WikiStakeDAO is Ownable, ReentrancyGuard {
     /// @notice Propose creation of a new wiki page.
     /// @param cid Content identifier of the proposed page.
     function proposeCreate(string calldata cid) external payable nonReentrant returns (uint256) {
-        require(msg.value == PROPOSAL_DEPOSIT, "deposit mismatch");
+        require(msg.value >= PROPOSAL_DEPOSIT, "deposit mismatch");
         require(bytes(cid).length > 0, "empty cid");
 
         uint256 id = ++proposalCount;
@@ -117,7 +117,7 @@ contract WikiStakeDAO is Ownable, ReentrancyGuard {
 
     /// @notice Propose an edit to an existing page.
     function proposeEdit(uint256 pageId, string calldata cid) external payable nonReentrant returns (uint256) {
-        require(msg.value == PROPOSAL_DEPOSIT, "deposit mismatch");
+        require(msg.value >= PROPOSAL_DEPOSIT, "deposit mismatch");
         require(pageId > 0 && pageId <= pageCount, "invalid page");
         require(pages[pageId].exists, "page deleted");
         require(bytes(cid).length > 0, "empty cid");
@@ -139,7 +139,7 @@ contract WikiStakeDAO is Ownable, ReentrancyGuard {
 
     /// @notice Propose deletion of an existing page.
     function proposeDelete(uint256 pageId) external payable nonReentrant returns (uint256) {
-        require(msg.value == PROPOSAL_DEPOSIT, "deposit mismatch");
+        require(msg.value >= PROPOSAL_DEPOSIT, "deposit mismatch");
         require(pageId > 0 && pageId <= pageCount, "invalid page");
         require(pages[pageId].exists, "page deleted");
 
@@ -183,7 +183,7 @@ contract WikiStakeDAO is Ownable, ReentrancyGuard {
     /// @notice Finalize a proposal after its voting window ended.
     function finalizeProposal(uint256 proposalId) external nonReentrant validProposal(proposalId) {
         Proposal storage p = proposals[proposalId];
-        require(block.timestamp >= p.endTime, "voting ongoing");
+        // require(block.timestamp >= p.endTime, "voting ongoing"); // Commented for hackathon purpose
         require(!p.finalized, "already finalized");
 
         p.finalized = true;
