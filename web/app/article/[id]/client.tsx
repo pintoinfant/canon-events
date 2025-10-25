@@ -6,6 +6,7 @@ import { MarkdownRenderer } from "@/components/markdown-renderer"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
 import { abi, address } from "@/lib/abi"
+import { shortenAddress } from "@/lib/utils"
 import { useEffect, useState } from "react"
 import { createPublicClient, http } from "viem"
 import { hederaTestnet } from "@/lib/wagmi"
@@ -116,7 +117,8 @@ export default function ArticleClient({ id }: ArticleClientProps) {
             const versionData = await res.json()
             return {
               id: log.args.id.toString(),
-              changeDescription: versionData.summary || "Version update",
+              changeDescription:
+                versionData.changeDescription || "Version update",
               createdBy: log.args.proposer,
               createdAt: new Date(Number(log.args.startTime) * 1000),
               content: versionData.content,
@@ -178,7 +180,7 @@ export default function ArticleClient({ id }: ArticleClientProps) {
           <h1 className="text-4xl font-bold text-foreground">{article.title}</h1>
           <p className="text-muted-foreground mt-2">{article.summary}</p>
           <div className="flex items-center gap-4 mt-4 text-sm text-muted-foreground">
-            <span>By {article.createdBy}</span>
+            <span>By {shortenAddress(article.createdBy)}</span>
             <span>•</span>
             <span>Updated {article.updatedAt.toLocaleDateString()}</span>
           </div>

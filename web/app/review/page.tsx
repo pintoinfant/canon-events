@@ -10,6 +10,7 @@ import { ArrowLeft, ThumbsUp, ThumbsDown, AlertCircle } from "lucide-react"
 import { useReadContract, useReadContracts, useWriteContract } from "wagmi"
 import { abi, address } from "@/lib/abi"
 import { formatEther, parseEther } from "viem"
+import { shortenAddress } from "@/lib/utils"
 
 interface ReviewArticle {
   id: string
@@ -168,7 +169,7 @@ export default function ReviewPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">By {article.author}</span>
+                    <span className="text-sm text-muted-foreground">By {shortenAddress(article.author)}</span>
                     <div className="flex gap-2">
                       <Button
                         size="sm"

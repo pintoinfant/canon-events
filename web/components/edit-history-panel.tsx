@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Clock, User } from "lucide-react"
+import { shortenAddress } from "@/lib/utils"
 
 interface EditHistoryPanelProps {
   article: Article
@@ -94,7 +95,7 @@ export function EditHistoryPanel({ article }: EditHistoryPanelProps) {
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <User className="h-3 w-3" />
-                      <span>{version.createdBy}</span>
+                      <span>{shortenAddress(version.createdBy)}</span>
                       <span>•</span>
                       <span>{version.createdAt.toLocaleDateString()}</span>
                     </div>

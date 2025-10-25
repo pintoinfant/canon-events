@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Trash2, Edit } from "lucide-react"
+import { shortenAddress } from "@/lib/utils"
 
 interface AdminArticleTableProps {
   articles: Article[]
@@ -40,7 +41,7 @@ export function AdminArticleTable({ articles, onDelete }: AdminArticleTableProps
           {articles.map((article) => (
             <TableRow key={article.id}>
               <TableCell className="font-medium max-w-xs truncate">{article.title}</TableCell>
-              <TableCell>{article.createdBy}</TableCell>
+              <TableCell>{shortenAddress(article.createdBy)}</TableCell>
               <TableCell>
                 <Badge
                   variant={
