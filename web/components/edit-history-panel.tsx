@@ -24,6 +24,12 @@ export function EditHistoryPanel({ article }: EditHistoryPanelProps) {
         </Button>
       </Link>
 
+      <Link href="/contribute">
+        <Button className="w-full bg-transparent" size="lg" variant="outline">
+          Contribute
+        </Button>
+      </Link>
+
       {/* Article Status */}
       <Card>
         <CardHeader>

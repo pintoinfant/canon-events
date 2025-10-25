@@ -63,6 +63,11 @@ export function AdminArticleTable({ articles, onDelete }: AdminArticleTableProps
                       <Edit className="h-4 w-4" />
                     </Button>
                   </Link>
+                  <Link href="/contribute">
+                    <Button variant="ghost" size="sm" title="Contribute to this article">
+                      <span className="text-xs">Contribute</span>
+                    </Button>
+                  </Link>
                   <Button
                     variant="ghost"
                     size="sm"

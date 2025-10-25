@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { useAccount } from "wagmi"
+import { useWallet } from "@/lib/wallet-context"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -55,7 +55,7 @@ const mockReviewArticles: ReviewArticle[] = [
 ]
 
 export default function ReviewPage() {
-  const { isConnected } = useAccount()
+  const { isConnected } = useWallet()
   const [articles, setArticles] = useState(mockReviewArticles)
   const [selectedArticle, setSelectedArticle] = useState<ReviewArticle | null>(null)
   const [userVotes, setUserVotes] = useState<Record<string, "approve" | "reject" | null>>({})
@@ -123,9 +123,14 @@ export default function ReviewPage() {
           Back to Home
         </Link>
 
-        <div className="mb-8">
-          <h1 className="text-4xl font-sans font-bold text-foreground mb-2">Review Articles</h1>
-          <p className="text-muted-foreground">Review and vote on submitted articles to help maintain quality</p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-sans font-bold text-foreground mb-2">Review Articles</h1>
+            <p className="text-muted-foreground">Review and vote on submitted articles to help maintain quality</p>
+          </div>
+          <Link href="/contribute">
+            <Button className="rounded-full">Contribute</Button>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

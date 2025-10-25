@@ -1,6 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import Image from "next/image"
 
 interface NFTBadgeProps {
   walletAddress: string
@@ -9,14 +10,14 @@ interface NFTBadgeProps {
 
 export function NFTBadge({ walletAddress, contributionAmount }: NFTBadgeProps) {
   return (
-    <Card className="glass rounded-2xl border-white/20 bg-gradient-to-br from-blue-50/50 to-purple-50/50">
+    <Card className="glass rounded-2xl border-white/20 bg-gradient-to-br from-blue-50/50 to-purple-50/50 overflow-hidden">
       <CardHeader className="text-center pb-3">
         <CardTitle className="text-lg">Contributor Badge</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex justify-center">
-          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-3xl font-bold">
-            ✓
+          <div className="relative w-64 h-64 rounded-2xl overflow-hidden shadow-lg">
+            <Image src="/contributor-badge-bg.jpg" alt="Contributor Badge" fill className="object-cover" />
           </div>
         </div>
         <div className="text-center space-y-2">

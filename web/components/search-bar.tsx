@@ -47,7 +47,7 @@ export function SearchBar() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query && setIsOpen(true)}
-          className="flex-1 py-4 px-6 text-base border-0 bg-transparent focus:outline-none focus:ring-0 font-sans placeholder:text-muted-foreground"
+          className="flex-1 py-4 px-6 text-base border-0 bg-transparent focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:border-transparent font-sans placeholder:text-muted-foreground"
         />
         <button className="px-6 py-4 bg-primary text-primary-foreground hover:opacity-90 transition-opacity border-0 flex items-center justify-center">
           <Search className="h-5 w-5" />

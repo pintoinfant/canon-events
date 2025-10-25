@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
-import { useAccount } from "wagmi"
+import { useWallet } from "@/lib/wallet-context"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { ArrowLeft, AlertCircle } from "lucide-react"
 
 export default function CreatePage() {
-  const { isConnected } = useAccount()
+  const { isConnected } = useWallet()
   const [title, setTitle] = useState("")
   const [summary, setSummary] = useState("")
   const [content, setContent] = useState("")
@@ -106,7 +106,7 @@ export default function CreatePage() {
         </Link>
 
         <div className="mb-8">
-          <h1 className="text-4xl font-sans font-bold text-foreground mb-2">Create New Article</h1>
+          <h1 className="text-4xl font-sans font-bold text-foreground mb-2 tracking-tighter">Create New Article</h1>
           <p className="text-muted-foreground">Submit a new article to the Canon Event knowledge platform</p>
         </div>
 

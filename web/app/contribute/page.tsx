@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
-import { useAccount } from "wagmi"
+import { useWallet } from "@/lib/wallet-context"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
@@ -58,7 +58,7 @@ const mockContributionArticles: ContributionArticle[] = [
 ]
 
 export default function ContributePage() {
-  const { isConnected, address } = useAccount()
+  const { isConnected, address } = useWallet()
   const [selectedArticle, setSelectedArticle] = useState<ContributionArticle | null>(null)
   const [contribution, setContribution] = useState("")
   const [contributionAmount, setContributionAmount] = useState("")
@@ -226,11 +226,37 @@ export default function ContributePage() {
                 </CardContent>
               </Card>
             ) : (
-              <Card className="glass rounded-2xl border-white/20">
-                <CardContent className="pt-6">
-                  <p className="text-center text-muted-foreground">Select an article to contribute</p>
-                </CardContent>
-              </Card>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {mockContributionArticles.map((article) => (
+                  <Card
+                    key={article.id}
+                    className="glass rounded-2xl border-white/20 cursor-pointer transition-all hover:shadow-lg hover:ring-2 hover:ring-primary/50"
+                    onClick={() => setSelectedArticle(article)}
+                  >
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <CardTitle className="text-base line-clamp-2 flex-1">{article.title}</CardTitle>
+                        <Badge
+                          variant={
+                            article.status === "published"
+                              ? "default"
+                              : article.status === "under-review"
+                                ? "secondary"
+                                : "outline"
+                          }
+                          className="text-xs rounded-full flex-shrink-0"
+                        >
+                          {article.status}
+                        </Badge>
+                      </div>
+                      <CardDescription className="text-xs">{article.contributions} contributions</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground line-clamp-2">{article.summary}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             )}
           </div>
 
@@ -239,46 +265,61 @@ export default function ContributePage() {
               <NFTBadge walletAddress={address} contributionAmount={contributionAmount || "0"} />
             )}
 
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-foreground">Available Articles</h3>
-              <Badge variant="outline" className="rounded-full">
-                {mockContributionArticles.length}
-              </Badge>
-            </div>
-
-            {mockContributionArticles.map((article) => (
-              <Card
-                key={article.id}
-                className={`glass rounded-2xl border-white/20 cursor-pointer transition-all hover:shadow-lg ${
-                  selectedArticle?.id === article.id ? "ring-2 ring-primary" : ""
-                }`}
-                onClick={() => setSelectedArticle(article)}
-              >
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base line-clamp-2">{article.title}</CardTitle>
-                  <CardDescription className="text-xs">{article.contributions} contributions</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Badge
-                    variant={
-                      article.status === "published"
-                        ? "default"
-                        : article.status === "under-review"
-                          ? "secondary"
-                          : "outline"
-                    }
-                    className="text-xs rounded-full"
-                  >
-                    {article.status}
+            {selectedArticle && (
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-foreground">Other Articles</h3>
+                  <Badge variant="outline" className="rounded-full">
+                    {mockContributionArticles.length - 1}
                   </Badge>
-                </CardContent>
-              </Card>
-            ))}
+                </div>
 
-            <Button className="w-full rounded-full gap-2 bg-primary text-primary-foreground hover:opacity-90">
-              <Plus className="w-4 h-4" />
-              Create New Article
-            </Button>
+                {mockContributionArticles
+                  .filter((article) => article.id !== selectedArticle.id)
+                  .map((article) => (
+                    <Card
+                      key={article.id}
+                      className="glass rounded-2xl border-white/20 cursor-pointer transition-all hover:shadow-lg"
+                      onClick={() => setSelectedArticle(article)}
+                    >
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-base line-clamp-2">{article.title}</CardTitle>
+                        <CardDescription className="text-xs">{article.contributions} contributions</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <Badge
+                          variant={
+                            article.status === "published"
+                              ? "default"
+                              : article.status === "under-review"
+                                ? "secondary"
+                                : "outline"
+                          }
+                          className="text-xs rounded-full"
+                        >
+                          {article.status}
+                        </Badge>
+                      </CardContent>
+                    </Card>
+                  ))}
+              </>
+            )}
+
+            {!selectedArticle && (
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-foreground">Available Articles</h3>
+                  <Badge variant="outline" className="rounded-full">
+                    {mockContributionArticles.length}
+                  </Badge>
+                </div>
+
+                <Button className="w-full rounded-full gap-2 bg-primary text-primary-foreground hover:opacity-90">
+                  <Plus className="w-4 h-4" />
+                  Create New Article
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>

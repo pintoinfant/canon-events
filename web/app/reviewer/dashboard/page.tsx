@@ -1,11 +1,13 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { mockReviewTasks } from "@/lib/mock-data"
 import { ReviewCard } from "@/components/review-card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 
 export default function ReviewerDashboard() {
   const [tasks, setTasks] = useState(mockReviewTasks)
@@ -26,9 +28,14 @@ export default function ReviewerDashboard() {
     <main className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b border-border bg-card">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <h1 className="text-4xl font-bold text-foreground">Reviewer Dashboard</h1>
-          <p className="text-muted-foreground mt-2">Review and approve article submissions</p>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold text-foreground">Reviewer Dashboard</h1>
+            <p className="text-muted-foreground mt-2">Review and approve article submissions</p>
+          </div>
+          <Link href="/contribute">
+            <Button className="rounded-full">Contribute</Button>
+          </Link>
         </div>
       </div>
 
