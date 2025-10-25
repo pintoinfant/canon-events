@@ -42,7 +42,7 @@ export default function ArticleClient({ id }: ArticleClientProps) {
           transport: http(),
         })
 
-        // 1. Fetch the main proposal summary
+        // 1. Fetch the proposal to get the pageId
         const proposal = (await publicClient.readContract({
           address,
           abi,
@@ -56,11 +56,26 @@ export default function ArticleClient({ id }: ArticleClientProps) {
 
         const pageId = proposal[1]
 
-        // Get latest block and calculate a fromBlock within the 7-day limit
-        const latestBlock = await publicClient.getBlockNumber()
-        const fromBlock = latestBlock > 200000n ? latestBlock - 200000n : 0n
+        // 2. Fetch the latest page content using the pageId
+        const page = (await publicClient.readContract({
+          address,
+          abi,
+          functionName: "getPage",
+          args: [pageId],
+        })) as [string, boolean]
 
-        // 2. Fetch all ProposalCreated and Finalized events
+        if (!page || !page[1]) {
+          // Page doesn't exist
+          return
+        }
+
+        const latestCid = page[0]
+
+        // 3. Fetch all ProposalCreated and Finalized events for history
+        const fromBlock =
+          (await publicClient.getBlockNumber()) > 200000n
+            ? (await publicClient.getBlockNumber()) - 200000n
+            : 0n
         const [proposalCreatedLogs, finalizedLogs] = await Promise.all([
           publicClient.getLogs({
             address,
@@ -78,7 +93,7 @@ export default function ArticleClient({ id }: ArticleClientProps) {
           }),
         ])
 
-        // 3. Create a map of finalized and accepted proposals
+        // 4. Create a map of finalized and accepted proposals
         const acceptedProposals = new Set()
         finalizedLogs.forEach((log: any) => {
           if (log.args.accepted) {
@@ -86,7 +101,7 @@ export default function ArticleClient({ id }: ArticleClientProps) {
           }
         })
 
-        // 4. Filter for accepted edit proposals for this page
+        // 5. Filter for accepted edit proposals for this page
         const editHistoryPromises = proposalCreatedLogs
           .filter((log: any) => {
             const isEdit = log.args.kind === 1 // 1 is Edit enum
@@ -110,9 +125,9 @@ export default function ArticleClient({ id }: ArticleClientProps) {
 
         const versions = await Promise.all(editHistoryPromises)
 
-        // 5. Fetch current article content
+        // 6. Fetch current article content from the latest CID
         const res = await fetch(
-          `https://gateway.lighthouse.storage/ipfs/${proposal[4]}`,
+          `https://gateway.lighthouse.storage/ipfs/${latestCid}`,
         )
         const articleData = await res.json()
 

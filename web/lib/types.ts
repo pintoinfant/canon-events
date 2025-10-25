@@ -2,6 +2,7 @@
 
 export interface Article {
   id: string
+  pageId: string
   slug: string
   title: string
   content: string

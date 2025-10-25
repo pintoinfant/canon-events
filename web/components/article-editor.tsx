@@ -11,6 +11,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DiffViewer } from "@/components/diff-viewer"
 import { MarkdownRenderer } from "@/components/markdown-renderer"
 import { ChevronLeft } from "lucide-react"
+import { useWriteContract } from "wagmi"
+import { abi, address } from "@/lib/abi"
+import { uploadJSONToIPFS } from "@/lib/lighthouse"
+import { parseEther } from "viem"
 
 interface ArticleEditorProps {
   article: Article
@@ -23,17 +27,34 @@ export function ArticleEditor({ article }: ArticleEditorProps) {
   const [content, setContent] = useState(article.content)
   const [changeDescription, setChangeDescription] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const { writeContractAsync } = useWriteContract()
 
   const handleSave = async () => {
     setIsSubmitting(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      // 1. Upload to IPFS
+      const Hash = await uploadJSONToIPFS({
+        title,
+        summary,
+        content,
+        changeDescription,
+      })
 
-    // In a real app, this would save to the backend
-    console.log("Article saved:", { title, summary, content, changeDescription })
+      // 2. Propose edit on-chain
+      await writeContractAsync({
+        address,
+        abi,
+        functionName: "proposeEdit",
+        args: [BigInt(article.pageId), Hash],
+        value: parseEther("1"), // TODO: Make this dynamic
+      })
 
-    setIsSubmitting(false)
-    router.push(`/article/${article.slug}`)
+      router.push(`/article/${article.id}`)
+    } catch (error) {
+      console.error("Failed to save article edit:", error)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleCancel = () => {

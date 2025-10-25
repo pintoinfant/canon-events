@@ -1,12 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useWallet } from "@/lib/wallet-context"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, ThumbsUp, ThumbsDown, AlertCircle } from "lucide-react"
+import { useReadContract, useReadContracts, useWriteContract } from "wagmi"
+import { abi, address } from "@/lib/abi"
+import { formatEther, parseEther } from "viem"
 
 interface ReviewArticle {
   id: string
@@ -16,73 +19,84 @@ interface ReviewArticle {
   author: string
   stakeAmount: string
   votes: {
-    approve: number
-    reject: number
+    for: bigint
+    against: bigint
   }
 }
 
-const mockReviewArticles: ReviewArticle[] = [
-  {
-    id: "1",
-    title: "Understanding Blockchain Technology",
-    summary: "A comprehensive guide to blockchain fundamentals and how it works",
-    content:
-      "Blockchain is a distributed ledger technology that enables secure and transparent transactions. It uses cryptographic hashing to ensure data integrity and consensus mechanisms to validate transactions...",
-    author: "0x1234...5678",
-    stakeAmount: "0.5",
-    votes: { approve: 8, reject: 2 },
-  },
-  {
-    id: "2",
-    title: "Smart Contracts Explained",
-    summary: "Deep dive into smart contracts and their applications",
-    content:
-      "Smart contracts are self-executing contracts with terms written in code. They automatically execute when conditions are met, eliminating the need for intermediaries...",
-    author: "0x9876...5432",
-    stakeAmount: "0.3",
-    votes: { approve: 5, reject: 3 },
-  },
-  {
-    id: "3",
-    title: "DeFi Protocols and Yield Farming",
-    summary: "Exploring decentralized finance and yield farming strategies",
-    content:
-      "Decentralized Finance (DeFi) refers to financial services built on blockchain networks. Yield farming involves providing liquidity to earn rewards...",
-    author: "0x5555...6666",
-    stakeAmount: "0.7",
-    votes: { approve: 12, reject: 1 },
-  },
-]
-
 export default function ReviewPage() {
   const { isConnected } = useWallet()
-  const [articles, setArticles] = useState(mockReviewArticles)
+  const [articles, setArticles] = useState<ReviewArticle[]>([])
   const [selectedArticle, setSelectedArticle] = useState<ReviewArticle | null>(null)
-  const [userVotes, setUserVotes] = useState<Record<string, "approve" | "reject" | null>>({})
+  const { writeContractAsync } = useWriteContract()
 
-  const handleVote = (articleId: string, voteType: "approve" | "reject") => {
-    setUserVotes((prev) => ({
-      ...prev,
-      [articleId]: prev[articleId] === voteType ? null : voteType,
-    }))
+  const { data: proposalCount } = useReadContract({
+    address,
+    abi,
+    functionName: "proposalCount",
+  })
 
-    setArticles((prev) =>
-      prev.map((article) => {
-        if (article.id === articleId) {
-          const currentVote = userVotes[articleId]
-          const newVotes = { ...article.votes }
+  const { data: proposals } = useReadContracts({
+    contracts: proposalCount
+      ? Array.from({ length: Number(proposalCount) }, (_, i) => ({
+          address,
+          abi,
+          functionName: "proposals",
+          args: [BigInt(i + 1)],
+        }))
+      : [],
+    query: {
+      enabled: !!proposalCount,
+    },
+  })
 
-          if (currentVote === "approve") newVotes.approve -= 1
-          if (currentVote === "reject") newVotes.reject -= 1
+  useEffect(() => {
+    const fetchArticles = async () => {
+      if (proposals) {
+        const underReviewProposals = proposals.filter(
+          (p) => p.result && !(p.result as unknown as any[])[10], // Not finalized
+        )
 
-          if (voteType === "approve") newVotes.approve += 1
-          if (voteType === "reject") newVotes.reject += 1
+        const articlePromises = underReviewProposals.map(async (p: any) => {
+          const proposal = p.result
+          const res = await fetch(
+            `https://gateway.lighthouse.storage/ipfs/${proposal[4]}`,
+          )
+          const articleData = await res.json()
+          return {
+            id: proposal[0].toString(),
+            title: articleData.title,
+            summary: articleData.summary,
+            content: articleData.content,
+            author: proposal[3],
+            stakeAmount: formatEther(proposal[5]),
+            votes: {
+              for: proposal[8],
+              against: proposal[9],
+            },
+          }
+        })
 
-          return { ...article, votes: newVotes }
-        }
-        return article
-      }),
-    )
+        const fetchedArticles = await Promise.all(articlePromises)
+        setArticles(fetchedArticles)
+      }
+    }
+    fetchArticles()
+  }, [proposals])
+
+  const handleVote = async (articleId: string, voteType: "approve" | "reject") => {
+    try {
+      await writeContractAsync({
+        address,
+        abi,
+        functionName: "stakeAndVote",
+        args: [BigInt(articleId), voteType === "approve" ? 1 : 2],
+        value: parseEther("0.1"), // TODO: Make this dynamic
+      })
+      // Optionally, refetch articles or update UI optimistically
+    } catch (error) {
+      console.error("Failed to vote:", error)
+    }
   }
 
   if (!isConnected) {
@@ -148,7 +162,7 @@ export default function ReviewPage() {
                       <CardDescription>{article.summary}</CardDescription>
                     </div>
                     <Badge variant="outline" className="rounded-full">
-                      {article.stakeAmount} ETH
+                      {article.stakeAmount} HBAR
                     </Badge>
                   </div>
                 </CardHeader>
@@ -158,7 +172,7 @@ export default function ReviewPage() {
                     <div className="flex gap-2">
                       <Button
                         size="sm"
-                        variant={userVotes[article.id] === "approve" ? "default" : "outline"}
+                        variant="outline"
                         className="rounded-full gap-1"
                         onClick={(e) => {
                           e.stopPropagation()
@@ -166,11 +180,11 @@ export default function ReviewPage() {
                         }}
                       >
                         <ThumbsUp className="w-4 h-4" />
-                        {article.votes.approve}
+                        {formatEther(article.votes.for)}
                       </Button>
                       <Button
                         size="sm"
-                        variant={userVotes[article.id] === "reject" ? "destructive" : "outline"}
+                        variant="outline"
                         className="rounded-full gap-1"
                         onClick={(e) => {
                           e.stopPropagation()
@@ -178,7 +192,7 @@ export default function ReviewPage() {
                         }}
                       >
                         <ThumbsDown className="w-4 h-4" />
-                        {article.votes.reject}
+                        {formatEther(article.votes.against)}
                       </Button>
                     </div>
                   </div>
@@ -204,7 +218,7 @@ export default function ReviewPage() {
                     <div className="flex gap-2">
                       <Button
                         className="flex-1 rounded-full gap-2"
-                        variant={userVotes[selectedArticle.id] === "approve" ? "default" : "outline"}
+                        variant="outline"
                         onClick={() => handleVote(selectedArticle.id, "approve")}
                       >
                         <ThumbsUp className="w-4 h-4" />
@@ -212,7 +226,7 @@ export default function ReviewPage() {
                       </Button>
                       <Button
                         className="flex-1 rounded-full gap-2"
-                        variant={userVotes[selectedArticle.id] === "reject" ? "destructive" : "outline"}
+                        variant="outline"
                         onClick={() => handleVote(selectedArticle.id, "reject")}
                       >
                         <ThumbsDown className="w-4 h-4" />
@@ -223,10 +237,10 @@ export default function ReviewPage() {
 
                   <div className="bg-muted rounded-lg p-3 text-sm">
                     <p className="text-muted-foreground">
-                      <strong>Approve:</strong> {selectedArticle.votes.approve}
+                      <strong>Approve:</strong> {formatEther(selectedArticle.votes.for)}
                     </p>
                     <p className="text-muted-foreground">
-                      <strong>Reject:</strong> {selectedArticle.votes.reject}
+                      <strong>Reject:</strong> {formatEther(selectedArticle.votes.against)}
                     </p>
                   </div>
                 </CardContent>
