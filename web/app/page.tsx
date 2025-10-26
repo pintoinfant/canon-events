@@ -159,7 +159,7 @@ export default function Home() {
                 />
               </div>
               <div className="text-primary font-sans font-bold text-lg mb-1">
-                Create Info
+                Create Articles
               </div>
               <div className="text-sm text-muted-foreground">
                 Submit new articles
@@ -200,7 +200,7 @@ export default function Home() {
                 Patron
               </div>
               <div className="text-sm text-muted-foreground">
-                Improve articles
+                Support the creator for their research
               </div>
             </div>
           </Link>
@@ -273,9 +273,7 @@ export default function Home() {
               <div className="text-4xl font-sans font-bold text-primary mb-2">
                 {new Set(articles.map((a) => a.createdBy)).size}
               </div>
-              <div className="text-muted-foreground font-sans">
-                Patrons
-              </div>
+              <div className="text-muted-foreground font-sans">Patrons</div>
             </div>
           </div>
         </div>
