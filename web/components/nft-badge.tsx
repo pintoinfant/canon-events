@@ -10,7 +10,7 @@ interface NFTBadgeProps {
 
 export function NFTBadge({ walletAddress, contributionAmount }: NFTBadgeProps) {
   return (
-    <Card className="glass rounded-2xl border-white/20 bg-gradient-to-br from-blue-50/50 to-purple-50/50 overflow-hidden">
+    <Card className="glass rounded-2xl border-white/20 bg-gradient-to-br from-blue-50/50 to-purple-50/50 overflow-hidden mt-8 shadow-lg">
       <CardHeader className="text-center pb-3">
         <CardTitle className="text-lg">Contributor Badge</CardTitle>
       </CardHeader>
@@ -24,7 +24,7 @@ export function NFTBadge({ walletAddress, contributionAmount }: NFTBadgeProps) {
           <p className="text-sm font-medium text-foreground">You are a Contributor</p>
           <p className="text-xs text-muted-foreground">NFT Badge Minted</p>
           {contributionAmount && (
-            <p className="text-xs font-semibold text-primary">Contributed: {contributionAmount} ETH</p>
+            <p className="text-xs font-semibold text-primary">Contributed: {contributionAmount} HBAR</p>
           )}
           <p className="text-xs text-muted-foreground break-all">{walletAddress}</p>
         </div>
