@@ -1,13 +1,19 @@
-"use client"
+"use client";
 
-import { SearchBar } from "@/components/search-bar"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useEffect, useState } from "react"
-import { useReadContract, useReadContracts } from "wagmi"
-import { abi, address } from "@/lib/abi"
-import { WalletButton } from "@/components/wallet-button"
-import Link from "next/link"
-import { Spinner } from "@/components/ui/spinner"
+import { SearchBar } from "@/components/search-bar";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useEffect, useState } from "react";
+import { useReadContract, useReadContracts } from "wagmi";
+import { abi, address } from "@/lib/abi";
+import { WalletButton } from "@/components/wallet-button";
+import Link from "next/link";
+import { Spinner } from "@/components/ui/spinner";
 
 type ProposalSummary = readonly [
   bigint,
@@ -21,16 +27,16 @@ type ProposalSummary = readonly [
   bigint,
   bigint,
   boolean,
-  boolean,
-]
+  boolean
+];
 
 export default function Home() {
-  const [articles, setArticles] = useState<any[]>([])
+  const [articles, setArticles] = useState<any[]>([]);
   const { data: proposalCount } = useReadContract({
     abi,
     address,
     functionName: "proposalCount",
-  })
+  });
 
   const { data: proposalSummariesData, isLoading } = useReadContracts({
     contracts: Array.from({ length: Number(proposalCount) }, (_, i) => ({
@@ -42,18 +48,20 @@ export default function Home() {
     query: {
       enabled: !!proposalCount,
     },
-  })
+  });
 
   useEffect(() => {
     const fetchArticles = async () => {
       if (proposalSummariesData) {
         const acceptedProposals = proposalSummariesData
           .map((p) => p.result as ProposalSummary | undefined)
-          .filter((p): p is ProposalSummary => !!p && p[11] && p[2] === 0) // accepted and is a create proposal
+          .filter((p): p is ProposalSummary => !!p && p[11] && p[2] === 0); // accepted and is a create proposal
 
         const articlePromises = acceptedProposals.map(async (p) => {
-          const res = await fetch(`https://gateway.lighthouse.storage/ipfs/${p[4]}`)
-          const articleData = await res.json()
+          const res = await fetch(
+            `https://gateway.lighthouse.storage/ipfs/${p[4]}`
+          );
+          const articleData = await res.json();
           return {
             id: p[0].toString(),
             slug: p[0].toString(),
@@ -62,23 +70,23 @@ export default function Home() {
             status: "published",
             createdBy: p[3],
             versions: [],
-          }
-        })
-        const fetchedArticles = await Promise.all(articlePromises)
-        setArticles(fetchedArticles.filter((a) => a))
+          };
+        });
+        const fetchedArticles = await Promise.all(articlePromises);
+        setArticles(fetchedArticles.filter((a) => a));
       }
-    }
-    fetchArticles()
-  }, [proposalSummariesData])
+    };
+    fetchArticles();
+  }, [proposalSummariesData]);
 
-  const featuredArticles = articles.slice(0, 3)
+  const featuredArticles = articles.slice(0, 3);
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <Spinner className="h-12 w-12" />
       </div>
-    )
+    );
   }
 
   return (
@@ -93,8 +101,8 @@ export default function Home() {
             <span className="text-primary">Canonized by Community.</span>
           </h1>
           <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto font-sans">
-            Canon is a decentralized platform for creating, reviewing, and publishing articles, governed by a community of
-            stakers.
+            Canon is a decentralized platform for creating, reviewing, and
+            publishing articles, governed by a community of stakers.
           </p>
           <div className="mt-10 max-w-xl mx-auto">
             <SearchBar />
@@ -104,15 +112,22 @@ export default function Home() {
 
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl font-bold tracking-tight text-center mb-12 font-sans">Featured Articles</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-center mb-12 font-sans">
+            Featured Articles
+          </h2>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {featuredArticles.map((article) => (
-              <Card key={article.id} className="glass hover:border-primary transition-colors">
-                <CardHeader>
+              <Card
+                key={article.id}
+                className="glass hover:border-primary transition-colors flex flex-col"
+              >
+                <CardHeader className="grow">
                   <CardTitle className="font-sans">{article.title}</CardTitle>
-                  <CardDescription className="font-sans">{article.summary}</CardDescription>
+                  <CardDescription className="font-sans">
+                    {article.summary}
+                  </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="mt-auto">
                   <Link
                     href={`/article/${article.slug}`}
                     className="text-primary font-semibold hover:underline font-sans"
@@ -129,30 +144,38 @@ export default function Home() {
 
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/20">
         <div className="max-w-5xl mx-auto text-center">
-          <h2 className="text-3xl font-bold tracking-tight mb-4 font-sans">Platform Statistics</h2>
+          <h2 className="text-3xl font-bold tracking-tight mb-4 font-sans">
+            Platform Statistics
+          </h2>
           <p className="text-muted-foreground mb-12 font-sans">
             Powered by the community, for the community.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="glass rounded-2xl p-8 text-center hover:scale-105 transition-transform">
-              <div className="text-4xl font-sans font-bold text-primary mb-2">{articles.length}</div>
+              <div className="text-4xl font-sans font-bold text-primary mb-2">
+                {articles.length}
+              </div>
               <div className="text-muted-foreground font-sans">Articles</div>
             </div>
             <div className="glass rounded-2xl p-8 text-center hover:scale-105 transition-transform">
               <div className="text-4xl font-sans font-bold text-primary mb-2">
                 {articles.reduce((sum, a) => sum + a.versions.length, 0)}
               </div>
-              <div className="text-muted-foreground font-sans">Total Versions</div>
+              <div className="text-muted-foreground font-sans">
+                Total Versions
+              </div>
             </div>
             <div className="glass rounded-2xl p-8 text-center hover:scale-105 transition-transform">
               <div className="text-4xl font-sans font-bold text-primary mb-2">
                 {new Set(articles.map((a) => a.createdBy)).size}
               </div>
-              <div className="text-muted-foreground font-sans">Contributors</div>
+              <div className="text-muted-foreground font-sans">
+                Contributors
+              </div>
             </div>
           </div>
         </div>
       </section>
     </main>
-  )
+  );
 }
