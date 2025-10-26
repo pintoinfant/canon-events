@@ -105,7 +105,7 @@ export default function Home() {
             publishing articles, governed by a community of stakers.
           </p>
           <div className="mt-10 max-w-xl mx-auto">
-            <SearchBar />
+            <SearchBar articles={articles} />
           </div>
         </div>
       </section>
