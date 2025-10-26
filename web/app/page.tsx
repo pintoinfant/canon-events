@@ -6,6 +6,7 @@ import { useEffect, useState } from "react"
 import { useReadContract, useReadContracts } from "wagmi"
 import { abi, address } from "@/lib/abi"
 import { WalletButton } from "@/components/wallet-button"
+import Image from "next/image"
 import Link from "next/link"
 import { Spinner } from "@/components/ui/spinner"
 
@@ -83,10 +84,22 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-background">
-      <section className="py-32 px-4 sm:px-6 lg:px-8 border-b border-border relative">
-        <div className="absolute top-8 right-8">
+      <header className="px-4 lg:px-6 h-14 flex items-center border-b">
+        <Link href="/" className="flex items-center justify-center">
+          <Image src="/canon-logo-new.png" width={40} height={40} alt="Canon" />
+          <span className="sr-only">Canon</span>
+        </Link>
+        <nav className="ml-auto flex items-center gap-4 sm:gap-6">
+          <Link href="/review" className="text-sm font-medium hover:underline underline-offset-4">
+            Review
+          </Link>
+          <Link href="/create" className="text-sm font-medium hover:underline underline-offset-4">
+            Create
+          </Link>
           <WalletButton />
-        </div>
+        </nav>
+      </header>
+      <section className="py-32 px-4 sm:px-6 lg:px-8 border-b border-border relative">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-5xl font-bold tracking-tighter sm:text-6xl md:text-7xl font-sans">
             Decentralized Knowledge, <br />
