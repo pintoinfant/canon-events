@@ -1,42 +1,45 @@
-"use client"
+"use client";
 
-import { useState, useRef, useEffect } from "react"
-import Link from "next/link"
-import { Search } from "lucide-react"
-import { mockArticles } from "@/lib/mock-data"
-import { Input } from "@/components/ui/input"
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import { Search } from "lucide-react";
+import { mockArticles } from "@/lib/mock-data";
+import { Input } from "@/components/ui/input";
 
 export function SearchBar() {
-  const [query, setQuery] = useState("")
-  const [isOpen, setIsOpen] = useState(false)
-  const [suggestions, setSuggestions] = useState<typeof mockArticles>([])
-  const containerRef = useRef<HTMLDivElement>(null)
+  const [query, setQuery] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState<typeof mockArticles>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (query.trim()) {
       const filtered = mockArticles.filter(
         (article) =>
           article.title.toLowerCase().includes(query.toLowerCase()) ||
-          article.summary.toLowerCase().includes(query.toLowerCase()),
-      )
-      setSuggestions(filtered)
-      setIsOpen(true)
+          article.summary.toLowerCase().includes(query.toLowerCase())
+      );
+      setSuggestions(filtered);
+      setIsOpen(true);
     } else {
-      setSuggestions([])
-      setIsOpen(false)
+      setSuggestions([]);
+      setIsOpen(false);
     }
-  }, [query])
+  }, [query]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
       }
     }
 
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <div ref={containerRef} className="relative w-full max-w-2xl mx-auto">
@@ -61,13 +64,17 @@ export function SearchBar() {
               key={article.id}
               href={`/article/${article.slug}`}
               onClick={() => {
-                setQuery("")
-                setIsOpen(false)
+                setQuery("");
+                setIsOpen(false);
               }}
               className="block px-4 py-3 hover:bg-white/30 border-b border-white/10 last:border-b-0 transition-colors font-sans"
             >
-              <div className="font-medium text-foreground text-sm">{article.title}</div>
-              <div className="text-xs text-muted-foreground line-clamp-1">{article.summary}</div>
+              <div className="font-medium text-foreground text-sm">
+                {article.title}
+              </div>
+              <div className="text-xs text-muted-foreground line-clamp-1">
+                {article.summary}
+              </div>
             </Link>
           ))}
         </div>
@@ -79,5 +86,5 @@ export function SearchBar() {
         </div>
       )}
     </div>
-  )
+  );
 }
