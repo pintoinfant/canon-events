@@ -2,327 +2,199 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useReadContract, useReadContracts, useSendTransaction } from "wagmi"
+import { abi, address } from "@/lib/abi"
+import { parseEther, parseUnits } from "viem"
+import { useAccount } from "wagmi"
 import Link from "next/link"
-import { useWallet } from "@/lib/wallet-context"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { ArrowLeft, AlertCircle, Plus } from "lucide-react"
+import { Textarea } from "@/components/ui/textarea"
+import { Spinner } from "@/components/ui/spinner"
 import { NFTBadge } from "@/components/nft-badge"
+import { ArrowLeft } from "lucide-react"
+import { useToast } from "@/components/ui/use-toast"
 
-interface ContributionArticle {
-  id: string
-  title: string
-  summary: string
-  author: string
-  contributions: number
-  status: "published" | "under-review" | "draft"
-}
-
-const mockContributionArticles: ContributionArticle[] = [
-  {
-    id: "1",
-    title: "Understanding Blockchain Technology",
-    summary: "A comprehensive guide to blockchain fundamentals",
-    author: "Alice",
-    contributions: 12,
-    status: "published",
-  },
-  {
-    id: "2",
-    title: "Smart Contracts Explained",
-    summary: "Deep dive into smart contracts and their applications",
-    author: "Bob",
-    contributions: 8,
-    status: "published",
-  },
-  {
-    id: "3",
-    title: "DeFi Protocols and Yield Farming",
-    summary: "Exploring decentralized finance strategies",
-    author: "Carol",
-    contributions: 5,
-    status: "under-review",
-  },
-  {
-    id: "4",
-    title: "NFTs and Digital Ownership",
-    summary: "Understanding non-fungible tokens",
-    author: "David",
-    contributions: 3,
-    status: "draft",
-  },
+type ProposalSummary = readonly [
+  bigint,
+  bigint,
+  number,
+  `0x${string}`,
+  string,
+  bigint,
+  bigint,
+  bigint,
+  bigint,
+  bigint,
+  boolean,
+  boolean,
 ]
 
+interface Article {
+  id: string
+  slug: string
+  title: string
+  summary: string
+  author: `0x${string}`
+}
+
 export default function ContributePage() {
-  const { isConnected, address } = useWallet()
-  const [selectedArticle, setSelectedArticle] = useState<ContributionArticle | null>(null)
-  const [contribution, setContribution] = useState("")
-  const [contributionAmount, setContributionAmount] = useState("")
+  const { isConnected } = useAccount()
+  const { toast } = useToast()
+  const [articles, setArticles] = useState<Article[]>([])
+  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null)
+  const [message, setMessage] = useState("")
+  const [amount, setAmount] = useState("1")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
   const [showBadge, setShowBadge] = useState(false)
 
-  const handleSubmitContribution = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedArticle || !contribution.trim()) {
-      alert("Please select an article and write your contribution")
-      return
-    }
+  const { data: proposalCount } = useReadContract({
+    abi,
+    address,
+    functionName: "proposalCount",
+  })
 
+  const { data: proposalSummariesData, isLoading } = useReadContracts({
+    contracts: Array.from({ length: Number(proposalCount) }, (_, i) => ({
+      abi,
+      address,
+      functionName: "proposalSummary",
+      args: [BigInt(i + 1)],
+    })),
+    query: { enabled: !!proposalCount },
+  })
+
+  const { sendTransactionAsync } = useSendTransaction()
+
+  useEffect(() => {
+    const fetchArticles = async () => {
+      if (proposalSummariesData) {
+        const acceptedProposals = proposalSummariesData
+          .map((p) => p.result as ProposalSummary | undefined)
+          .filter((p): p is ProposalSummary => !!p && p[11] && p[2] === 0)
+
+        const articlePromises = acceptedProposals.map(async (p) => {
+          const res = await fetch(`https://gateway.lighthouse.storage/ipfs/${p[4]}`)
+          const articleData = await res.json()
+          return {
+            id: p[0].toString(),
+            slug: p[0].toString(),
+            title: articleData.title,
+            summary: articleData.summary,
+            author: p[3],
+          }
+        })
+        const fetchedArticles = await Promise.all(articlePromises)
+        setArticles(fetchedArticles.filter((a) => a).reverse())
+      }
+    }
+    fetchArticles()
+  }, [proposalSummariesData])
+
+  const handleSend = async () => {
+    if (!selectedArticle) return
     setIsSubmitting(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsSubmitting(false)
-    setSubmitted(true)
-    setShowBadge(true)
-    setContribution("")
-    setContributionAmount("")
+    try {
+      const valueInTinybars = BigInt(parseEther(amount).toString())
+      await sendTransactionAsync({
+        to: selectedArticle.author,
+        value: valueInTinybars,
+      })
+
+      toast({
+        title: "Contribution Sent!",
+        description: `You successfully sent ${amount} HBAR to the creator.`,
+      })
+      setShowBadge(true)
+      setSelectedArticle(null)
+    } catch (error) {
+      console.error("Contribution failed:", error)
+      toast({
+        title: "Contribution Failed",
+        description: "There was an error sending your contribution.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  if (!isConnected) {
+  if (isLoading) {
     return (
-      <main className="min-h-screen bg-background">
-        <div className="max-w-2xl mx-auto px-4 py-16">
-          <Link href="/" className="flex items-center gap-2 text-primary hover:underline mb-8">
-            <ArrowLeft className="w-4 h-4" />
-            Back to Home
-          </Link>
-
-          <Card className="glass rounded-2xl border-white/20">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-destructive" />
-                Wallet Connection Required
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4">
-                You need to connect your wallet to contribute to articles. Please connect your wallet to proceed.
-              </p>
-              <Link href="/">
-                <Button className="rounded-full">Go Back and Connect Wallet</Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
-      </main>
+      <div className="flex items-center justify-center h-screen">
+        <Spinner className="h-12 w-12" />
+      </div>
     )
   }
 
   return (
-    <main className="min-h-screen bg-background">
-      <div className="max-w-6xl mx-auto px-4 py-16">
+    <main className="min-h-screen bg-background py-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2 text-primary hover:underline mb-8">
           <ArrowLeft className="w-4 h-4" />
           Back to Home
         </Link>
+        <h1 className="text-4xl font-bold tracking-tight text-center mb-2 font-sans">Support a Creator</h1>
+        <p className="text-muted-foreground text-center mb-12">Show your appreciation by sending HBAR to article creators.</p>
 
-        <div className="mb-8">
-          <h1 className="text-4xl font-sans font-bold text-foreground mb-2">Contribute to Articles</h1>
-          <p className="text-muted-foreground">
-            Help improve existing articles by adding your knowledge and support creators with crypto contributions
-          </p>
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          {articles.map((article) => (
+            <Card
+              key={article.id}
+              className="glass hover:border-primary transition-colors cursor-pointer"
+              onClick={() => setSelectedArticle(article)}
+            >
+              <CardHeader>
+                <CardTitle className="font-sans">{article.title}</CardTitle>
+                <CardDescription className="font-sans">{article.summary}</CardDescription>
+              </CardHeader>
+            </Card>
+          ))}
         </div>
 
-        {submitted && (
-          <Card className="glass rounded-2xl border-white/20 mb-6 bg-green-50">
-            <CardContent className="pt-6">
-              <p className="text-green-800 font-medium">
-                Your contribution has been submitted successfully! It will be reviewed before being added to the
-                article.
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            {selectedArticle ? (
-              <Card className="glass rounded-2xl border-white/20">
-                <CardHeader>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <CardTitle className="text-2xl mb-2">{selectedArticle.title}</CardTitle>
-                      <CardDescription>{selectedArticle.summary}</CardDescription>
-                    </div>
-                    <Badge
-                      variant={
-                        selectedArticle.status === "published"
-                          ? "default"
-                          : selectedArticle.status === "under-review"
-                            ? "secondary"
-                            : "outline"
-                      }
-                      className="rounded-full"
-                    >
-                      {selectedArticle.status}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleSubmitContribution} className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">Your Contribution</label>
-                      <Textarea
-                        placeholder="Add your knowledge, corrections, or improvements to this article..."
-                        value={contribution}
-                        onChange={(e) => setContribution(e.target.value)}
-                        className="rounded-lg glass-strong min-h-48"
-                        required
-                      />
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {contribution.length} characters • Minimum 50 characters required
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">
-                        Support with Crypto (Optional)
-                      </label>
-                      <div className="flex gap-2">
-                        <Input
-                          type="number"
-                          placeholder="0.0"
-                          step="0.001"
-                          min="0"
-                          value={contributionAmount}
-                          onChange={(e) => setContributionAmount(e.target.value)}
-                          className="rounded-lg glass-strong"
-                        />
-                        <span className="flex items-center px-3 bg-white/10 rounded-lg text-sm font-medium text-foreground">
-                          ETH
-                        </span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Like buying a coffee for the creator - optional but appreciated!
-                      </p>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button
-                        type="submit"
-                        disabled={isSubmitting || contribution.length < 50}
-                        className="rounded-full flex-1 bg-primary text-primary-foreground hover:opacity-90"
-                      >
-                        {isSubmitting ? "Submitting..." : "Submit Contribution"}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="rounded-full bg-transparent"
-                        onClick={() => {
-                          setSelectedArticle(null)
-                          setContribution("")
-                          setContributionAmount("")
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </form>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {mockContributionArticles.map((article) => (
-                  <Card
-                    key={article.id}
-                    className="glass rounded-2xl border-white/20 cursor-pointer transition-all hover:shadow-lg hover:ring-2 hover:ring-primary/50"
-                    onClick={() => setSelectedArticle(article)}
-                  >
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between gap-2">
-                        <CardTitle className="text-base line-clamp-2 flex-1">{article.title}</CardTitle>
-                        <Badge
-                          variant={
-                            article.status === "published"
-                              ? "default"
-                              : article.status === "under-review"
-                                ? "secondary"
-                                : "outline"
-                          }
-                          className="text-xs rounded-full flex-shrink-0"
-                        >
-                          {article.status}
-                        </Badge>
-                      </div>
-                      <CardDescription className="text-xs">{article.contributions} contributions</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground line-clamp-2">{article.summary}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-4">
-            {showBadge && address && (
-              <NFTBadge walletAddress={address} contributionAmount={contributionAmount || "0"} />
-            )}
-
-            {selectedArticle && (
-              <>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-foreground">Other Articles</h3>
-                  <Badge variant="outline" className="rounded-full">
-                    {mockContributionArticles.length - 1}
-                  </Badge>
-                </div>
-
-                {mockContributionArticles
-                  .filter((article) => article.id !== selectedArticle.id)
-                  .map((article) => (
-                    <Card
-                      key={article.id}
-                      className="glass rounded-2xl border-white/20 cursor-pointer transition-all hover:shadow-lg"
-                      onClick={() => setSelectedArticle(article)}
-                    >
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-base line-clamp-2">{article.title}</CardTitle>
-                        <CardDescription className="text-xs">{article.contributions} contributions</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <Badge
-                          variant={
-                            article.status === "published"
-                              ? "default"
-                              : article.status === "under-review"
-                                ? "secondary"
-                                : "outline"
-                          }
-                          className="text-xs rounded-full"
-                        >
-                          {article.status}
-                        </Badge>
-                      </CardContent>
-                    </Card>
-                  ))}
-              </>
-            )}
-
-            {!selectedArticle && (
-              <>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-foreground">Available Articles</h3>
-                  <Badge variant="outline" className="rounded-full">
-                    {mockContributionArticles.length}
-                  </Badge>
-                </div>
-
-                <Button className="w-full rounded-full gap-2 bg-primary text-primary-foreground hover:opacity-90">
-                  <Plus className="w-4 h-4" />
-                  Create New Article
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
+        {showBadge && <NFTBadge walletAddress={selectedArticle?.author || ""} contributionAmount={amount} />}
       </div>
+
+      <Dialog open={!!selectedArticle} onOpenChange={() => setSelectedArticle(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Support the creator of "{selectedArticle?.title}"</DialogTitle>
+            <DialogDescription>
+              Send a message and some HBAR to show your appreciation. This is a great way to support the creators you love.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">Message (Optional)</label>
+              <Textarea
+                placeholder="Say thanks or leave a comment..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">Amount (HBAR)</label>
+              <Input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="e.g., 10"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSelectedArticle(null)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSend} disabled={isSubmitting}>
+              {isSubmitting ? <Spinner className="h-4 w-4" /> : `Send ${amount} HBAR`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   )
 }
