@@ -190,14 +190,14 @@ export default function Home() {
               <div className="flex justify-center mb-3">
                 <Image
                   src="/contributor.png"
-                  alt="Contribute"
+                  alt="Patron"
                   width={48}
                   height={48}
                   className="w-12 h-12"
                 />
               </div>
               <div className="text-primary font-sans font-bold text-lg mb-1">
-                Contribute
+                Patron
               </div>
               <div className="text-sm text-muted-foreground">
                 Improve articles
@@ -274,7 +274,7 @@ export default function Home() {
                 {new Set(articles.map((a) => a.createdBy)).size}
               </div>
               <div className="text-muted-foreground font-sans">
-                Contributors
+                Patrons
               </div>
             </div>
           </div>
