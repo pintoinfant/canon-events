@@ -9,6 +9,7 @@ import { WalletButton } from "@/components/wallet-button"
 import Image from "next/image"
 import Link from "next/link"
 import { Spinner } from "@/components/ui/spinner"
+import { Button } from "@/components/ui/button"
 
 type ProposalSummary = readonly [
   bigint,
@@ -147,6 +148,11 @@ export default function Home() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+          <div className="mt-12 text-center">
+            <Link href="/articles">
+              <Button variant="outline">View All Articles</Button>
+            </Link>
           </div>
         </div>
       </section>
