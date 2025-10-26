@@ -25,9 +25,8 @@ const _abrilFatface = V0_Font_Abril_Fatface({ subsets: ["latin"], weight: ["400"
 const _geistSans = Geist({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Canon Event - Web3 Knowledge Platform",
-  description: "A Wikipedia-like Web3 knowledge platform",
-  generator: "v0.app",
+  title: "Canon",
+  description: "A decentralized platform for creating, reviewing, and publishing articles, governed by a community of stakers.",
 }
 
 export default function RootLayout({

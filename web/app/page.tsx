@@ -125,6 +125,37 @@ export default function Home() {
             <SearchBar articles={articles} />
           </div>
         </div>
+
+        <div className="mt-10 grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 text-center">
+          <Link href="/create">
+            <div className="glass rounded-2xl p-6 hover:scale-105 transition-transform cursor-pointer">
+              <div className="flex justify-center mb-3">
+                <Image src="/creator.png" alt="Create" width={48} height={48} className="w-12 h-12" />
+              </div>
+              <div className="text-primary font-sans font-bold text-lg mb-1">Create Info</div>
+              <div className="text-sm text-muted-foreground">Submit new articles</div>
+            </div>
+          </Link>
+          <Link href="/review">
+            <div className="glass rounded-2xl p-6 hover:scale-105 transition-transform cursor-pointer">
+              <div className="flex justify-center mb-3">
+                <Image src="/review.png" alt="Review" width={48} height={48} className="w-12 h-12" />
+              </div>
+              <div className="text-primary font-sans font-bold text-lg mb-1">Review</div>
+              <div className="text-sm text-muted-foreground">Vote on submissions</div>
+            </div>
+          </Link>
+          <Link href="/contribute">
+            <div className="glass rounded-2xl p-6 hover:scale-105 transition-transform cursor-pointer">
+              <div className="flex justify-center mb-3">
+                <Image src="/contributor.png" alt="Contribute" width={48} height={48} className="w-12 h-12" />
+              </div>
+              <div className="text-primary font-sans font-bold text-lg mb-1">Contribute</div>
+              <div className="text-sm text-muted-foreground">Improve articles</div>
+            </div>
+          </Link>
+        </div>
+
       </section>
 
       <section className="py-20 px-4 sm:px-6 lg:px-8">
