@@ -107,9 +107,13 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-background">
       <header className="px-4 lg:px-6 h-14 flex items-center border-b">
-        <Link href="/" className="flex items-center justify-center">
-          <Image src="/canon-logo-new.png" width={40} height={40} alt="Canon" />
-          <span className="sr-only">Canon</span>
+        <Link href="/" className="flex items-center gap-2">
+          <Image
+            src="/mainlogos.png"
+            width={160}
+            height={40}
+            alt="Canon Event - An On-Chain Encyclopedia"
+          />
         </Link>
         <nav className="ml-auto flex items-center gap-4 sm:gap-6">
           <Link
