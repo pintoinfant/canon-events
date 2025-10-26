@@ -122,7 +122,7 @@ export default function Home() {
             stakers.
           </p>
           <div className="mt-10 max-w-xl mx-auto">
-            <SearchBar />
+            <SearchBar articles={articles} />
           </div>
         </div>
       </section>

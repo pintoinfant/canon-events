@@ -3,18 +3,28 @@
 import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { Search } from "lucide-react"
-import { mockArticles } from "@/lib/mock-data"
 import { Input } from "@/components/ui/input"
 
-export function SearchBar() {
+interface Article {
+  id: string
+  slug: string
+  title: string
+  summary: string
+}
+
+interface SearchBarProps {
+  articles: Article[]
+}
+
+export function SearchBar({ articles }: SearchBarProps) {
   const [query, setQuery] = useState("")
   const [isOpen, setIsOpen] = useState(false)
-  const [suggestions, setSuggestions] = useState<typeof mockArticles>([])
+  const [suggestions, setSuggestions] = useState<Article[]>([])
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (query.trim()) {
-      const filtered = mockArticles.filter(
+      const filtered = articles.filter(
         (article) =>
           article.title.toLowerCase().includes(query.toLowerCase()) ||
           article.summary.toLowerCase().includes(query.toLowerCase()),
@@ -25,7 +35,7 @@ export function SearchBar() {
       setSuggestions([])
       setIsOpen(false)
     }
-  }, [query])
+  }, [query, articles])
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
