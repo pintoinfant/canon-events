@@ -14,6 +14,7 @@ import { uploadJSONToIPFS } from "@/lib/lighthouse"
 import { useWriteContract } from "wagmi"
 import { parseEther } from "viem"
 import { abi, address } from "@/lib/abi"
+import { RichTextEditor } from "@/components/rich-text-editor"
 
 export default function CreatePage() {
   const { isConnected } = useWallet()
@@ -164,13 +165,13 @@ export default function CreatePage() {
 
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">Full Content</label>
-                <Textarea
-                  placeholder="Write your article content here"
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  className="rounded-lg glass-strong min-h-48"
-                  required
-                />
+                <div className="rounded-md border border-input bg-transparent shadow-xs min-h-96 transition-[color,box-shadow] outline-none focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50">
+                  <RichTextEditor
+                    value={content}
+                    onChange={setContent}
+                    placeholder="Write your article content here. You can use the toolbar to format text and add images."
+                  />
+                </div>
               </div>
 
               <div className="border-t border-border pt-6">

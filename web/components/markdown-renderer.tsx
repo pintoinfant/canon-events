@@ -10,6 +10,15 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
   const html = useMemo(() => {
     let html = content
 
+    // Check if content is already HTML (contains HTML tags)
+    const isHtml = /<[a-z][\s\S]*>/i.test(html)
+
+    if (isHtml) {
+      // Content is already HTML from rich text editor
+      return html
+    }
+
+    // Otherwise, process as Markdown
     // Headers
     html = html.replace(/^### (.*?)$/gm, '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>')
     html = html.replace(/^## (.*?)$/gm, '<h2 class="text-2xl font-bold mt-6 mb-3">$1</h2>')
