@@ -106,12 +106,12 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-background">
-      <header className="px-4 lg:px-6 h-14 flex items-center border-b">
+      <header className="px-4 lg:px-6 py-2 flex items-center border-b">
         <Link href="/" className="flex items-center gap-2">
           <Image
             src="/mainlogos.png"
-            width={160}
-            height={40}
+            width={200}
+            height={50}
             alt="Canon Event - An On-Chain Encyclopedia"
           />
         </Link>
