@@ -27,6 +27,7 @@ type ProposalSummary = readonly [
 
 export default function Home() {
   const [articles, setArticles] = useState<any[]>([])
+  const [totalVersions, setTotalVersions] = useState(0)
   const { data: proposalCount } = useReadContract({
     abi,
     address,
@@ -46,30 +47,40 @@ export default function Home() {
   })
 
   useEffect(() => {
-    const fetchArticles = async () => {
+    const processProposals = async () => {
       if (proposalSummariesData) {
-        const acceptedProposals = proposalSummariesData
+        const allProposals = proposalSummariesData
           .map((p) => p.result as ProposalSummary | undefined)
-          .filter((p): p is ProposalSummary => !!p && p[11] && p[2] === 0) // accepted and is a create proposal
+          .filter((p): p is ProposalSummary => !!p)
 
-        const articlePromises = acceptedProposals.map(async (p) => {
-          const res = await fetch(`https://gateway.lighthouse.storage/ipfs/${p[4]}`)
-          const articleData = await res.json()
-          return {
-            id: p[0].toString(),
-            slug: p[0].toString(),
-            title: articleData.title,
-            summary: articleData.summary,
-            status: "published",
-            createdBy: p[3],
-            versions: [],
+        const executedProposals = allProposals.filter((p) => p[11])
+        setTotalVersions(executedProposals.length)
+
+        const acceptedCreateProposals = allProposals.filter((p) => p[11] && p[2] === 0) // accepted and is a create proposal
+
+        const articlePromises = acceptedCreateProposals.map(async (p) => {
+          try {
+            const res = await fetch(`https://gateway.lighthouse.storage/ipfs/${p[4]}`)
+            if (!res.ok) return null
+            const articleData = await res.json()
+            return {
+              id: p[0].toString(),
+              slug: p[0].toString(),
+              title: articleData.title,
+              summary: articleData.summary,
+              status: "published",
+              createdBy: p[3],
+            }
+          } catch (error) {
+            console.error("Failed to fetch article data:", error)
+            return null
           }
         })
         const fetchedArticles = await Promise.all(articlePromises)
         setArticles(fetchedArticles.filter((a) => a))
       }
     }
-    fetchArticles()
+    processProposals()
   }, [proposalSummariesData])
 
   const featuredArticles = articles.slice(0, 3)
@@ -153,7 +164,7 @@ export default function Home() {
             </div>
             <div className="glass rounded-2xl p-8 text-center hover:scale-105 transition-transform">
               <div className="text-4xl font-sans font-bold text-primary mb-2">
-                {articles.reduce((sum, a) => sum + a.versions.length, 0)}
+                {totalVersions}
               </div>
               <div className="text-muted-foreground font-sans">Total Versions</div>
             </div>
