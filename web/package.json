@@ -1,5 +1,6 @@
 {
-  "name": "my-v0-project",
+  "name": "canon-events",
+  "description": "A decentralized platform for creating, reviewing, and publishing articles, governed by a community of stakers.",
   "version": "0.1.0",
   "private": true,
   "scripts": {

@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation"
 import { useReadContract, useWriteContract } from "wagmi"
 import { readContract } from "wagmi/actions"
 import { config } from "@/lib/wagmi"
-import { parseEther, formatEther } from "viem"
+import { parseUnits, formatUnits } from "viem"
 import { abi, address } from "@/lib/abi"
 import { DiffViewer } from "@/components/diff-viewer"
 import { Button } from "@/components/ui/button"
@@ -27,6 +27,7 @@ export default function ReviewProposalPage() {
   const router = useRouter()
   const [stakeAmount, setStakeAmount] = useState("1")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isFinalizing, setIsFinalizing] = useState(false)
   const [proposalDetails, setProposalDetails] = useState<ProposalDetails | null>(null)
   const [originalContent, setOriginalContent] = useState<string | null>(null)
 
@@ -84,13 +85,31 @@ export default function ReviewProposalPage() {
         abi,
         functionName: "stakeAndVote",
         args: [BigInt(id as string), voteType === "approve" ? 1 : 2],
-        value: parseEther(stakeAmount),
+        value: parseUnits(stakeAmount, 8),
       })
       router.push("/review")
     } catch (error) {
       console.error("Failed to vote:", error)
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleFinalize = async () => {
+    setIsFinalizing(true)
+    try {
+      await writeContractAsync({
+        address,
+        abi,
+        functionName: "finalizeProposal",
+        args: [BigInt(id as string)],
+      })
+      // Optionally, refresh data or navigate
+      router.push("/review")
+    } catch (error) {
+      console.error("Failed to finalize proposal:", error)
+    } finally {
+      setIsFinalizing(false)
     }
   }
 
@@ -126,6 +145,26 @@ export default function ReviewProposalPage() {
               </div>
             </CardContent>
           </Card>
+
+          {proposal && !(proposal as any)[10] && ( // Render only if proposal exists and is not executed
+            <Card className="mt-8">
+              <CardHeader>
+                <CardTitle>Finalize Proposal</CardTitle>
+                <CardDescription>
+                  If the voting period is over, you can finalize the proposal to execute the outcome.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button
+                  className="w-full"
+                  onClick={handleFinalize}
+                  disabled={isFinalizing || (proposal as any)[10]}
+                >
+                  {isFinalizing ? "Finalizing..." : "Finalize Proposal"}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         <div className="space-y-6">
@@ -174,16 +213,17 @@ export default function ReviewProposalPage() {
               <CardContent className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-green-500 font-medium">Approve</span>
-                  <span>{formatEther((proposal as any)[8])} HBAR</span>
+                  <span>{formatUnits((proposal as any)[8], 8)} HBAR</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-red-500 font-medium">Reject</span>
-                  <span>{formatEther((proposal as any)[9])} HBAR</span>
+                  <span>{formatUnits((proposal as any)[9], 8)} HBAR</span>
                 </div>
               </CardContent>
             </Card>
           )}
         </div>
+
       </div>
     </div>
   )
