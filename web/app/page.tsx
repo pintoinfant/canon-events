@@ -148,10 +148,10 @@ export default function Home() {
           <Link href="/contribute">
             <div className="glass rounded-2xl p-6 hover:scale-105 transition-transform cursor-pointer">
               <div className="flex justify-center mb-3">
-                <Image src="/contributor.png" alt="Contribute" width={48} height={48} className="w-12 h-12" />
+                <Image src="/patron.png" alt="Patron" width={48} height={48} className="w-12 h-12" />
               </div>
-              <div className="text-primary font-sans font-bold text-lg mb-1">Contribute</div>
-              <div className="text-sm text-muted-foreground">Improve articles</div>
+              <div className="text-primary font-sans font-bold text-lg mb-1">Patrons</div>
+              <div className="text-sm text-muted-foreground">Support the creators</div>
             </div>
           </Link>
         </div>
@@ -209,7 +209,7 @@ export default function Home() {
               <div className="text-4xl font-sans font-bold text-primary mb-2">
                 {new Set(articles.map((a) => a.createdBy)).size}
               </div>
-              <div className="text-muted-foreground font-sans">Contributors</div>
+              <div className="text-muted-foreground font-sans">Patrons</div>
             </div>
           </div>
         </div>
