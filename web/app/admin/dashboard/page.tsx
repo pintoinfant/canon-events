@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { mockArticles, mockContributors, mockReviewTasks } from "@/lib/mock-data"
+import type { Article, Contributor } from "@/lib/types"
 import { AdminArticleTable } from "@/components/admin-article-table"
 import { AdminContributorTable } from "@/components/admin-contributor-table"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,8 +10,8 @@ import { Badge } from "@/components/ui/badge"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
 
 export default function AdminDashboard() {
-  const [articles, setArticles] = useState(mockArticles)
-  const [contributors] = useState(mockContributors)
+  const [articles, setArticles] = useState<Article[]>([])
+  const [contributors] = useState<Contributor[]>([])
 
   const handleDeleteArticle = (articleId: string) => {
     setArticles(articles.filter((a) => a.id !== articleId))
@@ -22,7 +22,7 @@ export default function AdminDashboard() {
   const underReviewCount = articles.filter((a) => a.status === "under-review").length
   const draftCount = articles.filter((a) => a.status === "draft").length
   const totalVersions = articles.reduce((sum, a) => sum + a.versions.length, 0)
-  const pendingReviews = mockReviewTasks.filter((t) => t.status === "pending").length
+  const pendingReviews = 0
 
   // Chart data
   const chartData = [

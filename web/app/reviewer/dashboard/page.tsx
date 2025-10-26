@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { mockReviewTasks } from "@/lib/mock-data"
+import type { ReviewTask } from "@/lib/types"
 import { ReviewCard } from "@/components/review-card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 
 export default function ReviewerDashboard() {
-  const [tasks, setTasks] = useState(mockReviewTasks)
+  const [tasks, setTasks] = useState<ReviewTask[]>([])
 
   const handleApprove = (taskId: string, feedback: string) => {
     setTasks(tasks.map((task) => (task.id === taskId ? { ...task, status: "approved" as const, feedback } : task)))
